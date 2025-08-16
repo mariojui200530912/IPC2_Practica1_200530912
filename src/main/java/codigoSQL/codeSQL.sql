@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `practica1`.`evento` (
   `titulo_evento` VARCHAR(200) NULL,
   `ubicacion` VARCHAR(150) NULL,
   `cupo_maximo` INT NULL,
+  `costo_inscripcion` DECIMAL(10,2) NULL,  
   PRIMARY KEY (`codigo`))
 ENGINE = InnoDB;
 

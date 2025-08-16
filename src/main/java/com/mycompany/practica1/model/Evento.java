@@ -17,15 +17,16 @@ public class Evento {
     private String tituloEvento;
     private String ubicacion;
     private int cupoMaximo;  
-    private float precioEvento;
+    private float costoInscripcion;
     
-    public Evento(String codigo, LocalDate fecha, TipoEvento tipoEvento, String tituloEvento, String ubicacion, int cupoMaximo, float precioEvento){
+    public Evento(String codigo, LocalDate fecha, TipoEvento tipoEvento, String tituloEvento, String ubicacion, int cupoMaximo, float costoInscripcion){
         this.codigo = codigo;
         this.fecha = fecha;
         this.tipoEvento = tipoEvento;
+        this.tituloEvento = tituloEvento;
         this.ubicacion = ubicacion;
         this.cupoMaximo = cupoMaximo;    
-        this.precioEvento = precioEvento;
+        this.costoInscripcion = costoInscripcion;
     }
 
     public String getCodigo() {
@@ -76,12 +77,12 @@ public class Evento {
         this.cupoMaximo = cupoMaximo;
     }
 
-    public float getPrecioEvento() {
-        return precioEvento;
+    public float getCostoInscripcion() {
+        return costoInscripcion;
     }
 
-    public void setPrecioEvento(float precioEvento) {
-        this.precioEvento = precioEvento;
+    public void setCostoInscripcion(float costoInscripcion) {
+        this.costoInscripcion = costoInscripcion;
     }
     
 }

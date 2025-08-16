@@ -25,7 +25,7 @@ public class EventoDAO {
     }
     
     public void crearEvento(Evento evento) throws SQLException {
-        String sql = "INSERT INTO evento (codigo, fecha, tipo, titulo_evento, ubicacion, cupo_maximo) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO evento (codigo, fecha, tipo, titulo_evento, ubicacion, cupo_maximo, costo_inscripcion) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -35,7 +35,7 @@ public class EventoDAO {
             stmt.setString(4, evento.getTituloEvento());
             stmt.setString(5, evento.getUbicacion());
             stmt.setInt(6, evento.getCupoMaximo());
-            stmt.setFloat(7, evento.getPrecioEvento());
+            stmt.setFloat(7, evento.getCostoInscripcion());
             
             stmt.executeUpdate();
         } finally {
@@ -60,7 +60,7 @@ public class EventoDAO {
                         rs.getString("titulo_evento"),
                         rs.getString("ubicacion"),
                         rs.getInt("cupo_maximo"),
-                        rs.getFloat("precio_evento")
+                        rs.getFloat("costo_inscripcion")
                 );
             }
         } finally {

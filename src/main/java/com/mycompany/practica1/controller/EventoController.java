@@ -23,7 +23,7 @@ public class EventoController {
     private Validador validador;
 
     public EventoController() {
-
+        this.eventoDAO = new EventoDAO();
     }
 
     public ArrayList<String> registrarEvento(ArrayList<String> datos) {
@@ -37,23 +37,22 @@ public class EventoController {
             LocalDate fecha = LocalDate.parse(datos.get(1), formatter);
             TipoEvento tipo = TipoEvento.valueOf(datos.get(2).toUpperCase());
             int cupoMaximo = Integer.parseInt(datos.get(5));
-            float precioEvento = Float.parseFloat(datos.get(6));
+            float costoInscripcion = Float.parseFloat(datos.get(6));
 
             // Construir Evento
-            Evento evento = new Evento(datos.get(0), fecha, tipo, datos.get(3), datos.get(4), cupoMaximo, precioEvento);
+            Evento evento = new Evento(datos.get(0), fecha, tipo, datos.get(3), datos.get(4), cupoMaximo, costoInscripcion);
             
             // Guardar en BD (DAO)
-            EventoDAO dao = new EventoDAO();
-            if (dao.existeCodigoEvento(evento.getCodigo())) {
+            if (eventoDAO.existeCodigoEvento(evento.getCodigo())) {
                 errores.add("El codigo de evento ya esta registrado");
                 return errores;
             }
             
-            dao.crearEvento(evento);
+            eventoDAO.crearEvento(evento);
         } catch (SQLException e) {
             errores.add("Error en base de datos: " + e.getMessage());
         } catch (Exception e) {
-            errores.add("Error inesperado: " + e.getMessage());
+            errores.add("Error al registrar: " + e.getMessage());
         }
 
         return errores;
@@ -109,10 +108,10 @@ public class EventoController {
         }
 
         try {
-            float precioEvento = Float.parseFloat(precioStr);
-            v.validarNumeroPositivo(precioEvento, "cupo máximo");
+            float costoInscripcion = Float.parseFloat(precioStr);
+            v.validarNumeroPositivo(costoInscripcion, "cupo máximo");
         } catch (Exception e) {
-            errores.add("Precio inválido: " + e.getMessage());
+            errores.add("Costo de Inscripcion inválido: " + e.getMessage());
         }
 
         return errores;

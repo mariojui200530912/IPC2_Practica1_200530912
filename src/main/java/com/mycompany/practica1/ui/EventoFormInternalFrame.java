@@ -19,6 +19,7 @@ public class EventoFormInternalFrame extends JInternalFrame {
     private JTextField txtTitulo;
     private JTextField txtUbicacion;
     private JSpinner spnCupoMaximo;
+    private JTextField txtCostoInscripcion;
 
     public EventoFormInternalFrame() {
         super("Registro de Evento", true, true, true, true);
@@ -77,10 +78,18 @@ public class EventoFormInternalFrame extends JInternalFrame {
         gbc.gridx = 1;
         spnCupoMaximo = new JSpinner(new SpinnerNumberModel(50, 1, 1000, 1));
         panel.add(spnCupoMaximo, gbc);
+        
+        // Costo Inscripcion
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        panel.add(new JLabel("Costo Incripcion:"), gbc);
+        gbc.gridx = 1;
+        txtCostoInscripcion = new JTextField(20);
+        panel.add(txtCostoInscripcion, gbc);
 
         // Botones
         gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridy = 7;
         gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.CENTER;
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
@@ -107,6 +116,7 @@ public class EventoFormInternalFrame extends JInternalFrame {
         formEvento.add(txtTitulo.getText().trim());
         formEvento.add(txtUbicacion.getText().trim());
         formEvento.add(spnCupoMaximo.getValue().toString());
+        formEvento.add(txtCostoInscripcion.getText().trim());
 
         EventoController controller = new EventoController();
         ArrayList<String> errores = controller.registrarEvento(formEvento);

@@ -4,17 +4,14 @@
  */
 package com.mycompany.practica1.util;
 
-import com.mycompany.practica1.dao.EventoDAO;
-import com.mycompany.practica1.model.Evento;
-import com.mycompany.practica1.model.TipoEvento;
+import com.mycompany.practica1.controller.EventoController;
+import com.mycompany.practica1.ui.LogWindow;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
@@ -27,50 +24,53 @@ public class FileProcessor {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private int velocidadMs;
     private String rutaSalidaReportes;
-    private ProgressMonitor monitor;
+    private EventoController eventoController;
+    private LogWindow logWindow;
 
-    public FileProcessor(int velocidadMs, String rutaSalidaReportes, ProgressMonitor monitor) {
+    public FileProcessor(int velocidadMs, String rutaSalidaReportes, LogWindow logWindow) {
         this.velocidadMs = velocidadMs;
         this.rutaSalidaReportes = rutaSalidaReportes;
-        this.monitor = monitor;
+        this.eventoController = new EventoController();
+        this.logWindow = new LogWindow();
     }
 
-    public List<String> procesarArchivo(File archivo) {
-        List<String> resultados = new ArrayList<>();
+    public void procesarArchivo(File archivo) {
+        logWindow.limpiarLog();
+        logWindow.setVisible(true);
+        new Thread(() -> {
+            try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+                int totalLineas = contarLineas(archivo);
+                int lineaActual = 0;
 
-        try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
-            int totalLineas = contarLineas(archivo);
-            int lineaActual = 0;
-            String linea;
+                String linea;
+                while ((linea = br.readLine()) != null) {
+                    lineaActual++;
+                    final int currentLine = lineaActual;
 
-            while ((linea = br.readLine()) != null) {
-                lineaActual++;
-                actualizarProgreso(lineaActual, totalLineas);
+                    SwingUtilities.invokeLater(() -> {
+                        logWindow.agregarLog("Procesar linea " + currentLine + "/" + totalLineas);
+                    });
 
-                try {
-                    Thread.sleep(velocidadMs);
-                    String resultado = procesarLinea(linea.trim());
-                    resultados.add(resultado);
-                } catch (InterruptedException e) {
-                    manejarInterrupcion(resultados);
-                    return resultados;
-                } catch (IllegalArgumentException e) {
-                    resultados.add("Error en línea: " + lineaActual + " - " + e.getMessage());
+                    try {
+                        Thread.sleep(velocidadMs);
+                        String resultado = procesarLinea(linea.trim());
+                        logWindow.agregarLog(resultado);
+                    } catch (InterruptedException e) {
+                        logWindow.agregarLog("Procesamiento interrumpido");
+                        Thread.currentThread().interrupt();
+                        return;
+                    } catch (Exception e) {
+                        logWindow.agregarLog("Error en línea: " + lineaActual + " - " + e.getMessage());
+                    }
                 }
-
-                if (monitor.isCanceled()) {
-                    resultados.add("Procesamiento cancelado por el usuario");
-                    return resultados;
-                }
+                logWindow.agregarLog("Procesamiento completado");
+            } catch (IOException e) {
+                logWindow.agregarLog("Error al leer el archivo: " + e.getMessage());
             }
-        } catch (IOException e) {
-            resultados.add("Error al leer el archivo: " + e.getMessage());
-        }
-
-        return resultados;
+        }).start();
     }
 
-    private static String procesarLinea(String linea) {
+    private String procesarLinea(String linea) {
         if (linea.startsWith("REGISTRO_EVENTO")) {
             return procesarRegistroEvento(linea);
         } else if (linea.startsWith("REGISTRO_PARTICIPANTE")) {
@@ -83,28 +83,21 @@ public class FileProcessor {
         throw new IllegalArgumentException("Instrucción no reconocida");
     }
 
-    private static String procesarRegistroEvento(String linea) {
-        // Ejemplo: REGISTRO_EVENTO("EVT-001","25/08/2025","CHARLA","Tecnología Sheikah","Auditorio Central",150);
+    private String procesarRegistroEvento(String linea) {
+        // Ejemplo: REGISTRO_EVENTO("EVT-001","25/08/2025","CHARLA","Tecnología Sheikah","Auditorio Central",150,120.00);
         try {
             String[] partes = extraerParametros(linea);
             if (partes.length != 7) {
                 return "Error: numero de parametros invalido en '" + linea + "'";
             }
-            String codigo = partes[0].trim();
-            LocalDate fecha = LocalDate.parse(partes[1], DATE_FORMATTER);
-            TipoEvento tipo = TipoEvento.valueOf(partes[2]);
-            String titulo = partes[3];
-            String ubicacion = partes[4];
-            int cupoMaximo = Integer.parseInt(partes[5]);
-            float precio = Float.parseFloat(partes[6]);
 
-            Evento evento = new Evento(codigo, fecha, tipo, titulo, ubicacion, cupoMaximo, precio);
+            ArrayList<String> datos = new ArrayList<>(Arrays.asList(partes));
+            ArrayList<String> errores = eventoController.registrarEvento(datos);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
 
-            EventoDAO guardarEvento = new EventoDAO();
-
-            guardarEvento.crearEvento(evento);
-
-            return "Evento registrado: " + codigo;
+            return "Evento registrado: " + partes[0];
         } catch (Exception e) {
             return "Error al procesar el registro" + e.getMessage();
         }
@@ -161,28 +154,14 @@ public class FileProcessor {
         throw new IllegalArgumentException("Tipo de reporte no reconocido");
     }
      */
-    private void actualizarProgreso(int actual, int total) {
-        if (monitor != null) {
-            SwingUtilities.invokeLater(() -> {
-                monitor.setNote("Procesando linea " + actual + " de " + total);
-                monitor.setProgress((actual * 100) / total);
-            });
-        }
-    }
-
-    private void manejarInterrupcion(List<String> resultados) {
-        Thread.currentThread().interrupt();
-        resultados.add("Procesamiento Interrumpido");
-        if (monitor != null) {
-            monitor.close();
-        }
-    }
 
     private static String[] extraerParametros(String linea) {
         // Extrae el contenido entre paréntesis
         String contenido = linea.substring(linea.indexOf('(') + 1, linea.lastIndexOf(')'));
         // Divide los parámetros respetando las comillas
-        return contenido.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+        return Arrays.stream(contenido.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"))
+                .map(param -> param.trim().replaceAll("^\"|\"$", ""))
+                .toArray(String[]::new);
     }
 
     private int contarLineas(File archivo) throws IOException {
@@ -194,4 +173,5 @@ public class FileProcessor {
             return lineas;
         }
     }
+
 }

@@ -4,6 +4,7 @@
  */
 package com.mycompany.practica1.ui;
 
+import com.mycompany.practica1.controller.EventoController;
 import com.mycompany.practica1.util.FileProcessor;
 import com.mycompany.practica1.util.ProcesamientoDialog;
 import java.util.List;
@@ -20,6 +21,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class MainFrame extends JFrame {
 
     private JDesktopPane desktopPane;
+    private LogWindow logWindow;
 
     public MainFrame() {
         super("Sistema de Gestion de Eventos - Triforce Software");
@@ -134,35 +136,23 @@ public class MainFrame extends JFrame {
             return;
         }
 
-        ProgressMonitor monitor = new ProgressMonitor(
-                this,
-                "Procesando archivo...",
-                "", 0, 100
+        if (logWindow == null) {
+            logWindow = new LogWindow();
+            desktopPane.add(logWindow);
+            centrarVentanaInterna(logWindow);
+        }
+
+        EventoController eventoController = new EventoController();
+        // Lógica para procesar archivo
+
+        FileProcessor processor = new FileProcessor(
+                configDialog.getVelocidad(),
+                configDialog.getRutaSalidaReportes(),
+                logWindow
         );
 
-        // Lógica para procesar archivo
-        new Thread(() 
-            -> {
-            try {
-                FileProcessor processor = new FileProcessor(
-                        configDialog.getVelocidad(),
-                        configDialog.getRutaSalidaReportes(),
-                        monitor
-                );
+        processor.procesarArchivo(fileChooser.getSelectedFile());
 
-                List<String> resultados = processor.procesarArchivo(fileChooser.getSelectedFile());
-
-                SwingUtilities.invokeLater(() -> {
-                    mostrarResultadosProcesamiento(resultados);
-                    monitor.close();
-                });
-            } catch (Exception ex) {
-                SwingUtilities.invokeLater(() -> {
-                    JOptionPane.showMessageDialog(MainFrame.this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                    monitor.close();
-                });
-            }
-        }).start();
     }
 
     private void mostrarResultadosProcesamiento(List<String> resultados) {

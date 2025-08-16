@@ -31,7 +31,10 @@ public class ConexionDB {
     // Carga la configuración desde el archivo properties
     private void cargarConfiguracion() {
         Properties prop = new Properties();
-        try (InputStream input = new FileInputStream("resources/config.properties")) {
+        try (InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties")) {
+            if(input == null){
+                throw new RuntimeException("No se encontro el archivo config.properties");
+            }
             prop.load(input);
             this.url = "jdbc:mysql://" + 
                       prop.getProperty("db.host") + ":" + 
