@@ -5,6 +5,9 @@
 package com.mycompany.practica1.util;
 
 import com.mycompany.practica1.controller.EventoController;
+import com.mycompany.practica1.controller.ParticipanteController;
+import com.mycompany.practica1.model.Participante;
+import com.mycompany.practica1.model.TipoParticipante;
 import com.mycompany.practica1.ui.LogWindow;
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +15,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
 /**
@@ -25,13 +27,14 @@ public class FileProcessor {
     private int velocidadMs;
     private String rutaSalidaReportes;
     private EventoController eventoController;
+    private ParticipanteController participanteController;
     private LogWindow logWindow;
 
     public FileProcessor(int velocidadMs, String rutaSalidaReportes, LogWindow logWindow) {
         this.velocidadMs = velocidadMs;
         this.rutaSalidaReportes = rutaSalidaReportes;
+        this.logWindow = logWindow;
         this.eventoController = new EventoController();
-        this.logWindow = new LogWindow();
     }
 
     public void procesarArchivo(File archivo) {
@@ -48,7 +51,7 @@ public class FileProcessor {
                     final int currentLine = lineaActual;
 
                     SwingUtilities.invokeLater(() -> {
-                        logWindow.agregarLog("Procesar linea " + currentLine + "/" + totalLineas);
+                        logWindow.agregarLog("Procesar instruccion " + currentLine + "/" + totalLineas);
                     });
 
                     try {
@@ -63,7 +66,7 @@ public class FileProcessor {
                         logWindow.agregarLog("Error en línea: " + lineaActual + " - " + e.getMessage());
                     }
                 }
-                logWindow.agregarLog("Procesamiento completado");
+                logWindow.agregarLog("Procesamiento completado.");
             } catch (IOException e) {
                 logWindow.agregarLog("Error al leer el archivo: " + e.getMessage());
             }
@@ -71,10 +74,11 @@ public class FileProcessor {
     }
 
     private String procesarLinea(String linea) {
+
         if (linea.startsWith("REGISTRO_EVENTO")) {
             return procesarRegistroEvento(linea);
         } else if (linea.startsWith("REGISTRO_PARTICIPANTE")) {
-            // return procesarRegistroParticipante(linea);
+            return procesarRegistroParticipante(linea);
         } else if (linea.startsWith("INSCRIPCION")) {
             // return procesarInscripcion(linea);
         }
@@ -91,35 +95,35 @@ public class FileProcessor {
                 return "Error: numero de parametros invalido en '" + linea + "'";
             }
 
-            ArrayList<String> datos = new ArrayList<>(Arrays.asList(partes));
-            ArrayList<String> errores = eventoController.registrarEvento(datos);
+            ArrayList<String> errores = eventoController.registrarEvento(partes);
             if (!errores.isEmpty()) {
                 return "Error en registro: " + String.join(", ", errores);
             }
-
             return "Evento registrado: " + partes[0];
         } catch (Exception e) {
             return "Error al procesar el registro" + e.getMessage();
         }
     }
 
-    /*
-    private static String procesarRegistroParticipante(String linea) {
+    private String procesarRegistroParticipante(String linea) {
         // Ejemplo: REGISTRO_PARTICIPANTE("Zelda Hyrule","ESTUDIANTE","Universidad de Hyrule","zelda@hyrule.edu");
-        String[] partes = extraerParametros(linea);
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length != 4) {
+                return "Error: numero de parametros invalido en '" + linea + "'";
+            }
 
-        String nombre = partes[0];
-        TipoParticipante tipo = TipoParticipante.valueOf(partes[1]);
-        String institucion = partes[2];
-        String email = partes[3];
-
-        Participante participante = new Participante(nombre, tipo, institucion, email);
-
-        // Aquí llamarías al ParticipanteDAO para guardar
-        // participanteDAO.guardar(participante);
-        return "Participante registrado: " + email;
+            ArrayList<String> errores = participanteController.registrarParticipante(partes);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
+            return "Participante registrado: " + partes[3];
+        } catch (Exception e) {
+            return "Error al procesar el registro " + e.getMessage();
+        }
     }
 
+    /*
     private static String procesarInscripcion(String linea) {
         // Ejemplo: INSCRIPCION("zelda@hyrule.edu","EVT-001","ASISTENTE");
         String[] partes = extraerParametros(linea);
@@ -154,7 +158,6 @@ public class FileProcessor {
         throw new IllegalArgumentException("Tipo de reporte no reconocido");
     }
      */
-
     private static String[] extraerParametros(String linea) {
         // Extrae el contenido entre paréntesis
         String contenido = linea.substring(linea.indexOf('(') + 1, linea.lastIndexOf(')'));

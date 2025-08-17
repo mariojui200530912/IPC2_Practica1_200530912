@@ -17,45 +17,45 @@ import java.util.regex.Pattern;
 public class Validador {
 
     // Patrones comunes
-    private static final Pattern PATRON_CODIGO_EVENTO = Pattern.compile("^EVT-\\d{3}$");
-    private static final Pattern PATRON_CODIGO_ACTIVIDAD = Pattern.compile("^ACT-\\d{3}$");
+    private static final Pattern PATRON_CODIGO_EVENTO = Pattern.compile("^EVT-\\d+$");
+    private static final Pattern PATRON_CODIGO_ACTIVIDAD = Pattern.compile("^ACT-\\d+$");
     private static final Pattern PATRON_EMAIL = Pattern.compile("^[A-Za-z0-9+_%+\\-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
 
     // Validaciones genéricas
-    public static void validarNoVacio(String valor, String campo) {
+    public void validarNoVacio(String valor, String campo) {
         if (valor == null || valor.trim().isEmpty()) {
             throw new IllegalArgumentException("El campo " + campo + " no puede estar vacío");
         }
     }
 
-    public static void validarLongitudMaxima(String valor, int maximo, String campo) {
+    public void validarLongitudMaxima(String valor, int maximo, String campo) {
         if (valor != null && valor.length() > maximo) {
             throw new IllegalArgumentException("El campo " + campo + " no puede exceder los " + maximo + " caracteres");
         }
     }
 
-    public static void validarNumeroPositivo(Number numero, String campo) {
+    public void validarNumeroPositivo(Number numero, String campo) {
         if (numero == null || numero.doubleValue() <= 0) {
             throw new IllegalArgumentException("El campo " + campo + " debe ser un número positivo");
         }
     }
 
     // Validaciones específicas
-    public static void validarCodigoEvento(String codigo) {
+    public void validarCodigoEvento(String codigo) {
         validarNoVacio(codigo, "código de evento");
         if (!PATRON_CODIGO_EVENTO.matcher(codigo).matches()) {
             throw new IllegalArgumentException("El código de evento debe tener el formato EVT-XXX");
         }
     }
 
-    public static void validarCodigoActividad(String codigo) {
+    public void validarCodigoActividad(String codigo) {
         validarNoVacio(codigo, "código de actividad");
         if (!PATRON_CODIGO_ACTIVIDAD.matcher(codigo).matches()) {
             throw new IllegalArgumentException("El código de actividad debe tener el formato ACT-XXX");
         }
     }
 
-    public static void validarFecha(String fechaStr, String formato) {
+    public void validarFecha(String fechaStr, String formato) {
         validarNoVacio(fechaStr, "fecha");
         SimpleDateFormat sdf = new SimpleDateFormat(formato);
         sdf.setLenient(false);
@@ -67,14 +67,14 @@ public class Validador {
         }
     }
 
-    public static void validarEmail(String email) {
+    public void validarEmail(String email) {
         validarNoVacio(email, "correo electrónico");
         if (!PATRON_EMAIL.matcher(email).matches()) {
             throw new IllegalArgumentException("El correo electrónico no tiene un formato válido");
         }
     }
 
-    public static <T extends Enum<T>> void validarEnumerado(Class<T> enumType, String valor, String campo) {
+    public <T extends Enum<T>> void validarEnumerado(Class<T> enumType, String valor, String campo) {
         validarNoVacio(valor, campo);
         try {
             Enum.valueOf(enumType, valor.toUpperCase());
@@ -84,7 +84,7 @@ public class Validador {
         }
     }
 
-    private static <T extends Enum<T>> String[] obtenerValoresEnumerado(Class<T> enumType) {
+    private <T extends Enum<T>> String[] obtenerValoresEnumerado(Class<T> enumType) {
         T[] valores = enumType.getEnumConstants();
         String[] nombres = new String[valores.length];
         for (int i = 0; i < valores.length; i++) {
@@ -93,7 +93,7 @@ public class Validador {
         return nombres;
     }
     
-    public static void validarFechaFutura(String fechaStr, String formato) {
+    public void validarFechaFutura(String fechaStr, String formato) {
         validarFecha(fechaStr, formato);
 
         SimpleDateFormat sdf = new SimpleDateFormat(formato);
@@ -105,6 +105,15 @@ public class Validador {
         } catch (ParseException e) {
             // No debería ocurrir porque ya se validó antes
             throw new RuntimeException("Error inesperado al validar fecha", e);
+        }
+    }
+    
+    public void validarDecimales(float valor, int maxDecimales, String campo){
+        String[] parts = String.valueOf(valor).split("\\.");
+        if (parts.length > 1 && parts[1].length() > maxDecimales) {
+            throw new IllegalArgumentException(
+                    String.format("%s debe tener maximo %d decimales", campo,maxDecimales)
+            );
         }
     }
     

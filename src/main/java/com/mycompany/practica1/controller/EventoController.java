@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -24,9 +25,10 @@ public class EventoController {
 
     public EventoController() {
         this.eventoDAO = new EventoDAO();
+        this.validador = new Validador();
     }
 
-    public ArrayList<String> registrarEvento(ArrayList<String> datos) {
+    public ArrayList<String> registrarEvento(String[] datos) {
         ArrayList<String> errores = validarEvento(datos);
 
         if (!errores.isEmpty()) {
@@ -34,13 +36,13 @@ public class EventoController {
         }
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-            LocalDate fecha = LocalDate.parse(datos.get(1), formatter);
-            TipoEvento tipo = TipoEvento.valueOf(datos.get(2).toUpperCase());
-            int cupoMaximo = Integer.parseInt(datos.get(5));
-            float costoInscripcion = Float.parseFloat(datos.get(6));
+            LocalDate fecha = LocalDate.parse(datos[1], formatter);
+            TipoEvento tipo = TipoEvento.valueOf(datos[2].toUpperCase());
+            int cupoMaximo = Integer.parseInt(datos[5]);
+            float costoInscripcion = Float.parseFloat(datos[6]);
 
             // Construir Evento
-            Evento evento = new Evento(datos.get(0), fecha, tipo, datos.get(3), datos.get(4), cupoMaximo, costoInscripcion);
+            Evento evento = new Evento(datos[0], fecha, tipo, datos[3], datos[4], cupoMaximo, costoInscripcion);
             
             // Guardar en BD (DAO)
             if (eventoDAO.existeCodigoEvento(evento.getCodigo())) {
@@ -54,66 +56,48 @@ public class EventoController {
         } catch (Exception e) {
             errores.add("Error al registrar: " + e.getMessage());
         }
-
         return errores;
     }
 
-    public ArrayList<String> validarEvento(ArrayList<String> datos) {
+    public ArrayList<String> validarEvento(String[] datos) {
         ArrayList<String> errores = new ArrayList<>();
-        Validador v = new Validador();
 
-        String codigo = datos.get(0);
-        String fechaStr = datos.get(1);
-        String tipoStr = datos.get(2);
-        String titulo = datos.get(3);
-        String ubicacion = datos.get(4);
-        String cupoStr = datos.get(5);
-        String precioStr = datos.get(6);
-
-        try {
-            v.validarCodigoEvento(codigo);
-        } catch (Exception e) {
-            errores.add(e.getMessage());
-        }
+        String codigo = datos[0];
+        String fechaStr = datos[1];
+        String tipoStr = datos[2];
+        String titulo = datos[3];
+        String ubicacion = datos[4];
+        String cupoStr = datos[5];
+        String precioStr = datos[6];
 
         try {
-            v.validarFechaFutura(fechaStr, "dd/MM/yyyy");
-        } catch (Exception e) {
-            errores.add(e.getMessage());
-        }
+            validador.validarCodigoEvento(codigo);
 
-        try {
-            v.validarEnumerado(TipoEvento.class, tipoStr, "tipo de evento");
-        } catch (Exception e) {
-            errores.add(e.getMessage());
-        }
+            validador.validarFechaFutura(fechaStr, "dd/MM/yyyy");
 
-        try {
-            v.validarNoVacio(titulo, "título");
-        } catch (Exception e) {
-            errores.add(e.getMessage());
-        }
+            validador.validarEnumerado(TipoEvento.class, tipoStr, "tipo de evento");
 
-        try {
-            v.validarNoVacio(ubicacion, "ubicación");
-        } catch (Exception e) {
-            errores.add(e.getMessage());
-        }
+            validador.validarNoVacio(titulo, "título");
 
-        try {
+            validador.validarLongitudMaxima(ubicacion, 150, "ubicacion");
+            validador.validarNoVacio(ubicacion, "ubicación");
+
             int cupoMaximo = Integer.parseInt(cupoStr);
-            v.validarNumeroPositivo(cupoMaximo, "cupo máximo");
-        } catch (Exception e) {
-            errores.add("Cupo máximo inválido: " + e.getMessage());
-        }
+            validador.validarNumeroPositivo(cupoMaximo, "cupo máximo");
 
-        try {
             float costoInscripcion = Float.parseFloat(precioStr);
-            v.validarNumeroPositivo(costoInscripcion, "cupo máximo");
-        } catch (Exception e) {
-            errores.add("Costo de Inscripcion inválido: " + e.getMessage());
+            validador.validarDecimales(costoInscripcion, 2,"costo de inscripcion");
+            
+        } catch (IllegalArgumentException e){
+            errores.add(e.getMessage());
+        } catch (Exception e){
+            errores.add("Costo de Inscripcion invalido: " + e.getMessage());
         }
 
         return errores;
     }
+    
+    public List<Evento> obtenerTodosEventos() throws SQLException {
+        return eventoDAO.obtenerTodos();
+    }    
 }

@@ -109,14 +109,15 @@ public class EventoFormInternalFrame extends JInternalFrame {
 
     private void guardarEvento() {
         // Validar y guardar el evento
-        ArrayList<String> formEvento = new ArrayList<>();
-        formEvento.add(txtCodigo.getText().trim());
-        formEvento.add(txtFecha.getText().trim());
-        formEvento.add(cbTipo.getSelectedItem().toString());
-        formEvento.add(txtTitulo.getText().trim());
-        formEvento.add(txtUbicacion.getText().trim());
-        formEvento.add(spnCupoMaximo.getValue().toString());
-        formEvento.add(txtCostoInscripcion.getText().trim());
+        String[] formEvento = new String[7];
+        
+        formEvento[0] = txtCodigo.getText().trim();
+        formEvento[1] = txtFecha.getText().trim();
+        formEvento[2] = cbTipo.getSelectedItem().toString();
+        formEvento[3] = txtTitulo.getText().trim();
+        formEvento[4] = txtUbicacion.getText().trim();
+        formEvento[5] = spnCupoMaximo.getValue().toString();
+        formEvento[6] = txtCostoInscripcion.getText().trim();
 
         EventoController controller = new EventoController();
         ArrayList<String> errores = controller.registrarEvento(formEvento);

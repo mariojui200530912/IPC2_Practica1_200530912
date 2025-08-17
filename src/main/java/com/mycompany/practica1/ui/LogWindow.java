@@ -6,6 +6,8 @@ package com.mycompany.practica1.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import javax.swing.*;
 import javax.swing.SwingUtilities;
 
@@ -36,7 +38,9 @@ public class LogWindow extends JInternalFrame{
     
     public void agregarLog(String mensaje){
         SwingUtilities.invokeLater(() -> {
-            logArea.append(mensaje + "\n");
+            LocalDateTime fechaHoraActual = LocalDateTime.now();
+            DateTimeFormatter formato = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            logArea.append(fechaHoraActual.format(formato) + "--" + mensaje + "\n");
             logArea.setCaretPosition(logArea.getDocument().getLength());
         });
     }

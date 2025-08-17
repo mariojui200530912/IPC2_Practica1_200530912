@@ -11,6 +11,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -79,6 +81,30 @@ public class EventoDAO {
                 return rs.next();
             }
         }        
+    }
+    
+    public List<Evento> obtenerTodos() throws SQLException {
+        String sql = "SELECT codigo, fecha, tipo, titulo_evento, ubicacion, cupo_maximo, costo_inscripcion FROM evento";
+        List<Evento> eventos = new ArrayList<>();
+        
+        try (Connection conn = conexionDB.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            
+            while (rs.next()) {
+                Evento evento = new Evento(
+                    rs.getString("codigo"),
+                    rs.getDate("fecha").toLocalDate(),
+                    TipoEvento.valueOf(rs.getString("tipo")),
+                    rs.getString("titulo_evento"),
+                    rs.getString("ubicacion"),
+                    rs.getInt("cupo_maximo"),
+                    rs.getFloat("costo_inscripcion")
+                );
+                eventos.add(evento);
+            }
+        }
+        return eventos;
     }
 
 }

@@ -61,7 +61,7 @@ public class MainFrame extends JFrame {
         JMenuItem itemListarEventos = new JMenuItem("Listar eventos");
         itemListarEventos.addActionListener(this::mostrarListaEventos);
         menuEventos.add(itemListarEventos);
-        /*
+        
         // Menú Participantes
         JMenu menuParticipantes = new JMenu("Participantes");
         JMenuItem itemNuevoParticipante = new JMenuItem("Registrar nuevo participante");
@@ -70,7 +70,7 @@ public class MainFrame extends JFrame {
         JMenuItem itemListarParticipantes = new JMenuItem("Listar participantes");
         itemListarParticipantes.addActionListener(this::mostrarListaParticipantes);
         menuParticipantes.add(itemListarParticipantes);
-
+        /*
         // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");
         JMenuItem itemReporteParticipantes = new JMenuItem("Reporte de participantes");
@@ -86,7 +86,7 @@ public class MainFrame extends JFrame {
         // Agregar menús a la barra
         menuBar.add(menuArchivo);
         menuBar.add(menuEventos);
-        // menuBar.add(menuParticipantes);
+        menuBar.add(menuParticipantes);
         // menuBar.add(menuReportes);
 
         setJMenuBar(menuBar);
@@ -140,11 +140,10 @@ public class MainFrame extends JFrame {
             logWindow = new LogWindow();
             desktopPane.add(logWindow);
             centrarVentanaInterna(logWindow);
+            logWindow.setVisible(true);
         }
 
-        EventoController eventoController = new EventoController();
         // Lógica para procesar archivo
-
         FileProcessor processor = new FileProcessor(
                 configDialog.getVelocidad(),
                 configDialog.getRutaSalidaReportes(),
@@ -183,7 +182,7 @@ public class MainFrame extends JFrame {
         listFrame.setVisible(true);
     }
 
-    /*
+    
     private void mostrarFormularioParticipante(ActionEvent e) {
         ParticipanteFormInternalFrame form = new ParticipanteFormInternalFrame();
         centrarVentanaInterna(form);
@@ -197,7 +196,7 @@ public class MainFrame extends JFrame {
         desktopPane.add(listFrame);
         listFrame.setVisible(true);
     }
-     */
+    
     private void generarReporteParticipantes(ActionEvent e) {
         // Implementar generación de reporte
         JOptionPane.showMessageDialog(this, "Reporte de participantes generado");
