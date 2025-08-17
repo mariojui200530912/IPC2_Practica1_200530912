@@ -5,9 +5,9 @@
 package com.mycompany.practica1.util;
 
 import com.mycompany.practica1.controller.EventoController;
+import com.mycompany.practica1.controller.InscripcionController;
 import com.mycompany.practica1.controller.ParticipanteController;
-import com.mycompany.practica1.model.Participante;
-import com.mycompany.practica1.model.TipoParticipante;
+import com.mycompany.practica1.model.TipoInscripcion;
 import com.mycompany.practica1.ui.LogWindow;
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,6 +28,7 @@ public class FileProcessor {
     private String rutaSalidaReportes;
     private EventoController eventoController;
     private ParticipanteController participanteController;
+    private InscripcionController inscripcionController;
     private LogWindow logWindow;
 
     public FileProcessor(int velocidadMs, String rutaSalidaReportes, LogWindow logWindow) {
@@ -80,7 +81,7 @@ public class FileProcessor {
         } else if (linea.startsWith("REGISTRO_PARTICIPANTE")) {
             return procesarRegistroParticipante(linea);
         } else if (linea.startsWith("INSCRIPCION")) {
-            // return procesarInscripcion(linea);
+            return procesarInscripcion(linea);
         }
         // ... otros tipos de instrucciones
 
@@ -123,22 +124,26 @@ public class FileProcessor {
         }
     }
 
-    /*
-    private static String procesarInscripcion(String linea) {
+    private String procesarInscripcion(String linea) {
         // Ejemplo: INSCRIPCION("zelda@hyrule.edu","EVT-001","ASISTENTE");
-        String[] partes = extraerParametros(linea);
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length != 3) {
+                return "Error: numero de parametros invalido en '" + linea + "'";
+            }
 
-        String email = partes[0];
-        String codigoEvento = partes[1];
-        TipoInscripcion tipo = TipoInscripcion.valueOf(partes[2]);
+            ArrayList<String> errores = inscripcionController.inscribirParticipante(partes);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
 
-        // Aquí implementarías la lógica de inscripción
-        // 1. Buscar participante por email
-        // 2. Buscar evento por código
-        // 3. Crear inscripción
-        return "Inscripción registrada: " + email + " al evento " + codigoEvento;
+            return "Inscripción registrada: " + partes[0] + " al evento " + partes[1];
+        } catch (Exception e) {
+            return "Error al procesar la inscripcion " + e.getMessage();
+        }
     }
-    
+
+    /*
     private String procesarReporte(String linea){
         if(rutaSalidaReportes == null || rutaSalidaReportes.isEmpty()){
         throw new IllegalArgumentException("Ruta de salida para reportes no configurada");
