@@ -22,6 +22,13 @@ public class Inscripcion {
         this.tipoInscripcion = tipoInscripcion;
         this.estatus = estatus;
     }
+    
+    public Inscripcion(String codigoEvento, int idParticipante, TipoInscripcion tipoInscripcion, TipoEstatus estatus){
+        this.codigoEvento = codigoEvento;
+        this.idParticipante = idParticipante;
+        this.tipoInscripcion = tipoInscripcion;
+        this.estatus = estatus;
+    }
 
     public int getIdParticipante() {
         return idParticipante;

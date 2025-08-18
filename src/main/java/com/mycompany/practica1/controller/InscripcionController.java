@@ -57,15 +57,51 @@ public class InscripcionController {
                 return errores;
             }
 
-            Inscripcion inscripcion = new Inscripcion(participante.getIdParticipante(),participante.getEmail(), evento.getCodigo(), tipo, estatus);
-
+            Inscripcion inscripcion = new Inscripcion(participante.getIdParticipante(), participante.getEmail(), evento.getCodigo(), tipo, estatus);
             inscripcionDAO.registrarIncripcion(inscripcion);
+        } catch (IllegalArgumentException e) {
+            errores.add("Error: valor inválido en los datos -> " + e.getMessage());
+        } catch (Exception e) {
+            errores.add("Error inesperado al procesar inscripción: " + e.getMessage());
+        }
+
+        return errores;
+    }
+
+    public ArrayList<String> confirmarPagoInscripcion(String[] datos) {
+        ArrayList<String> errores = validarPagoInscripcion(datos);
+        if (!errores.isEmpty()) {
+            return errores;
+        }
+
+        try {
+            String email = datos[0];
+            String codigoEvento = datos[1];
+            TipoEstatus estatus = TipoEstatus.CONFIRMADO;
+
+            ParticipanteDAO participanteDAO = new ParticipanteDAO();
+            EventoDAO eventoDAO = new EventoDAO();
+
+            Participante participante = participanteDAO.obtenerParticipantePorEmail(email);
+            Evento evento = eventoDAO.obtenerEventoPorCodigo(codigoEvento);
+            if (participante == null) {
+                errores.add("El correo de participante no esta registrado en la base de datos");
+                return errores;
+            } else if (evento == null) {
+                errores.add("El codigo de Evento no existe en la base de datos");
+                return errores;
+            }
+            boolean actualizado = inscripcionDAO.actualizarEstadoInscripcion(evento.getCodigo(), participante.getIdParticipante(), estatus);
+            if (actualizado) {
+                errores.add("Estado actualizado correctamente");
+            } else {
+                errores.add("No se encontro la inscripcion especificada");
+            }
         } catch (IllegalArgumentException e) {
             System.out.println("Error: valor inválido en los datos -> " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Error inesperado al procesar inscripción: " + e.getMessage());
         }
-
         return errores;
     }
 
@@ -75,7 +111,7 @@ public class InscripcionController {
         String emailStr = datos[0];
         String codigoStr = datos[1];
         String tipoStr = datos[2];
-       
+
         try {
             validador.validarEmail(emailStr);
             validador.validarCodigoEvento(codigoStr);
@@ -88,4 +124,20 @@ public class InscripcionController {
         return errores;
     }
 
+    public ArrayList<String> validarPagoInscripcion(String[] datos) {
+        ArrayList<String> errores = new ArrayList<>();
+
+        String emailStr = datos[0];
+        String codigoStr = datos[1];
+
+        try {
+            validador.validarEmail(emailStr);
+            validador.validarCodigoEvento(codigoStr);
+
+        } catch (Exception e) {
+            errores.add(e.getMessage());
+        }
+
+        return errores;
+    }
 }

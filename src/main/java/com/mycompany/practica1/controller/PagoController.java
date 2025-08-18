@@ -53,6 +53,9 @@ public class PagoController {
             } else if (evento == null) {
                 errores.add("El codigo de Evento no existe en la base de datos");
                 return errores;
+            }else if (!(evento.getCostoInscripcion() <= monto)) {
+                errores.add("El monto de pago no es igual o mayor al costo de inscripcion del Evento");
+                return errores;
             }
 
             Pago pago = new Pago(tipo, monto, evento.getCodigo(), participante.getIdParticipante());

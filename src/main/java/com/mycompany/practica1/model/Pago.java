@@ -9,26 +9,16 @@ package com.mycompany.practica1.model;
  * @author Hp
  */
 public class Pago {
-    private int idPago;
     private TipoPago tipo;
     private float monto;
     private String codigoEvento;
     private int idParticipante;
 
-    public Pago(int idPago, TipoPago tipo, float monto, String codigoEvento, int idParticipante) {
-        this.idPago = idPago;
+    public Pago(TipoPago tipo, float monto, String codigoEvento, int idParticipante) {
         this.tipo = tipo;
         this.monto = monto;
         this.codigoEvento = codigoEvento;
         this.idParticipante = idParticipante;
-    }
-
-    public int getIdPago() {
-        return idPago;
-    }
-
-    public void setIdPago(int idPago) {
-        this.idPago = idPago;
     }
 
     public TipoPago getTipo() {

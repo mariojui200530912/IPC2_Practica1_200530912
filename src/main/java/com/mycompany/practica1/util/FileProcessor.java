@@ -6,6 +6,7 @@ package com.mycompany.practica1.util;
 
 import com.mycompany.practica1.controller.EventoController;
 import com.mycompany.practica1.controller.InscripcionController;
+import com.mycompany.practica1.controller.PagoController;
 import com.mycompany.practica1.controller.ParticipanteController;
 import com.mycompany.practica1.model.TipoInscripcion;
 import com.mycompany.practica1.ui.LogWindow;
@@ -29,6 +30,7 @@ public class FileProcessor {
     private EventoController eventoController;
     private ParticipanteController participanteController;
     private InscripcionController inscripcionController;
+    private PagoController pagoController;
     private LogWindow logWindow;
 
     public FileProcessor(int velocidadMs, String rutaSalidaReportes, LogWindow logWindow) {
@@ -82,8 +84,13 @@ public class FileProcessor {
             return procesarRegistroParticipante(linea);
         } else if (linea.startsWith("INSCRIPCION")) {
             return procesarInscripcion(linea);
+        } else if (linea.startsWith("PAGO")) {
+            return procesarPago(linea);
+        } else if (linea.startsWith("VALIDAR_INSCRIPCION")) {
+            return procesarValidacionInscripcion(linea);
+        } else if (linea.startsWith("REGISTRO_ACTIVIDAD")) {
+            return procesarRegistroActividad(linea);
         }
-        // ... otros tipos de instrucciones
 
         throw new IllegalArgumentException("Instrucción no reconocida");
     }
@@ -140,6 +147,58 @@ public class FileProcessor {
             return "Inscripción registrada: " + partes[0] + " al evento " + partes[1];
         } catch (Exception e) {
             return "Error al procesar la inscripcion " + e.getMessage();
+        }
+    }
+
+    private String procesarPago(String linea) {
+        // Ejemplo: PAGO("zelda@hyrule.edu","EVT-00000001","EFECTIVO",50.00);
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length != 4) {
+                return "Error: numero de parametros invalido en '" + linea + "'";
+            }
+
+            ArrayList<String> errores = pagoController.registrarPago(partes);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
+
+            return "Pago registrado: " + partes[0] + " al evento " + partes[1];
+        } catch (Exception e) {
+            return "Error al procesar el pago " + e.getMessage();
+        }
+    }
+
+    private String procesarValidacionInscripcion(String linea) {
+        // Ejemplo: VALIDAR_INSCRIPCION("zelda@hyrule.edu","EVT-00000001");
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length != 2) return "Error: numero de parametros invalido en '" + linea + "'";
+
+            ArrayList<String> errores = inscripcionController.confirmarPagoInscripcion(partes);
+            if (!errores.isEmpty()) return "Error en registro: " + String.join(", ", errores);
+
+            return "Inscripcion confirmada: " + partes[0] + " al evento " + partes[1];
+        } catch (Exception e) {
+            return "Error al procesar la confirmacion de inscripcion " + e.getMessage();
+        }
+    }
+
+    private String procesarRegistroActividad(String linea) {
+        // Ejemplo: REGISTRO_EVENTO("EVT-001","25/08/2025","CHARLA","Tecnología Sheikah","Auditorio Central",150,120.00);
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length != 7) {
+                return "Error: numero de parametros invalido en '" + linea + "'";
+            }
+
+            ArrayList<String> errores = eventoController.registrarEvento(partes);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
+            return "Evento registrado: " + partes[0];
+        } catch (Exception e) {
+            return "Error al procesar el registro" + e.getMessage();
         }
     }
 
