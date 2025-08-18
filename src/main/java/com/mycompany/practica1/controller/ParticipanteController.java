@@ -81,6 +81,7 @@ public class ParticipanteController {
         return errores;
     }
     
+    
     public List<Participante> obtenerTodosParticipantes() throws SQLException {
         return participanteDAO.obtenerTodos();
     }

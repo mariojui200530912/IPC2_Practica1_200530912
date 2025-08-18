@@ -9,6 +9,7 @@ package com.mycompany.practica1.model;
  * @author Hp
  */
 public class Participante {
+    private int idParticipante;
     private String email;
     private String nombre;
     private TipoParticipante tipoParticipante;
@@ -19,6 +20,22 @@ public class Participante {
         this.nombre = nombre;
         this.tipoParticipante = tipoParticipante;
         this.institucionProcedencia = institucionProcedencia;
+    }
+    
+    public Participante(int idParticipante, String email, String nombre, TipoParticipante tipoParticipante, String institucionProcedencia) {
+        this.idParticipante = idParticipante;
+        this.email = email;
+        this.nombre = nombre;
+        this.tipoParticipante = tipoParticipante;
+        this.institucionProcedencia = institucionProcedencia;
+    }
+
+    public int getIdParticipante() {
+        return idParticipante;
+    }
+
+    public void setIdParticipante(int idParticipante) {
+        this.idParticipante = idParticipante;
     }
 
     public String getEmail() {

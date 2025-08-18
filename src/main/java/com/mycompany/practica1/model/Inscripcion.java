@@ -15,11 +15,20 @@ public class Inscripcion {
     private TipoInscripcion tipoInscripcion;
     private TipoEstatus estatus;
 
-    public Inscripcion(String email, String codigoEvento, TipoInscripcion tipoInscripcion, TipoEstatus estatus) {
+    public Inscripcion(int idParticipante, String email, String codigoEvento, TipoInscripcion tipoInscripcion, TipoEstatus estatus) {
+        this.idParticipante = idParticipante;
         this.email = email;
         this.codigoEvento = codigoEvento;
         this.tipoInscripcion = tipoInscripcion;
         this.estatus = estatus;
+    }
+
+    public int getIdParticipante() {
+        return idParticipante;
+    }
+
+    public void setIdParticipante(int idParticipante) {
+        this.idParticipante = idParticipante;
     }
 
     public String getEmail() {
@@ -52,7 +61,5 @@ public class Inscripcion {
 
     public void setEstatus(TipoEstatus estatus) {
         this.estatus = estatus;
-    }
-    
-    
+    }   
 }
