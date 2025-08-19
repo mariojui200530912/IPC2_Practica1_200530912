@@ -166,7 +166,7 @@ public class ActividadDAO {
                             rs.getInt("id"),
                             codigoEvento
                     );
-                    a.setEmailParticipanteEncargado(emailEncargado);
+                    a.setEmailParticipanteEncargado(rs.getString("email_encargado"));
                     actividades.add(a);
                 }
             }
