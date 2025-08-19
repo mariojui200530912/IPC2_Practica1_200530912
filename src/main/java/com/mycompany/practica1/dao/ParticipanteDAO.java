@@ -5,6 +5,7 @@
 package com.mycompany.practica1.dao;
 
 import com.mycompany.practica1.model.Participante;
+import com.mycompany.practica1.model.TipoEstatus;
 import com.mycompany.practica1.model.TipoParticipante;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -95,5 +96,42 @@ public class ParticipanteDAO {
             }
         }
         return participantes;
+    }
+    
+    public List<Participante> obtenerParticipantesParaReporte(String codigoEvento, String tipo, String institucion) throws SQLException {
+        String sql = "SELECT p.*, i.estatus FROM participante p "
+                + "JOIN inscripcion i ON p.id = i.id_participante "
+                + "WHERE i.codigo_evento = ? "
+                + (tipo.isEmpty() ? "" : "AND p.tipo = ? ")
+                + (institucion.isEmpty() ? "" : "AND p.institucion_procedencia LIKE ? ");
+
+        try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int paramIndex = 1;
+            stmt.setString(paramIndex++, codigoEvento);
+
+            if (!tipo.isEmpty()) {
+                stmt.setString(paramIndex++, tipo);
+            }
+            if (!institucion.isEmpty()) {
+                stmt.setString(paramIndex++, "%" + institucion + "%");
+            }
+
+            List<Participante> participantes = new ArrayList<>();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Participante p = new Participante(
+                            rs.getInt("id"),
+                            rs.getString("email"),
+                            rs.getString("nombre"),
+                            TipoParticipante.valueOf(rs.getString("tipo")),
+                            rs.getString("institucion_procedencia")
+                    );
+                    p.setEstatus(TipoEstatus.valueOf(rs.getString("estatus")));
+                    participantes.add(p);
+                }
+            }
+            return participantes;
+        }
     }
 }

@@ -11,6 +11,7 @@ import java.util.List;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -129,11 +130,19 @@ public class MainFrame extends JFrame {
             return;
         }
 
-        if (logWindow == null) {
+        if (logWindow == null || logWindow.isClosed()) {
             logWindow = new LogWindow();
             desktopPane.add(logWindow);
+            logWindow.limpiarLog();
             centrarVentanaInterna(logWindow);
             logWindow.setVisible(true);
+        } else {
+            try{
+                logWindow.setSelected(true);
+            } catch(PropertyVetoException ex){
+                ex.printStackTrace();
+            }
+            
         }
 
         // Lógica para procesar archivo

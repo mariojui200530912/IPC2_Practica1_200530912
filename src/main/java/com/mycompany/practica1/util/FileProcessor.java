@@ -44,6 +44,12 @@ public class FileProcessor {
         this.rutaSalidaReportes = rutaSalidaReportes;
         this.logWindow = logWindow;
         this.eventoController = new EventoController();
+        this.participanteController = new ParticipanteController();
+        this.actividadController = new ActividadController();
+        this.asistenciaController = new AsistenciaController();
+        this.certificadoController = new CertificadoController();
+        this.inscripcionController = new InscripcionController();
+        this.pagoController = new PagoController();
     }
 
     public void procesarArchivo(File archivo) {
@@ -83,26 +89,26 @@ public class FileProcessor {
     }
 
     private String procesarLinea(String linea) {
+        return switch (extraerComando(linea)) {
+            case "REGISTRO_EVENTO" -> procesarRegistroEvento(linea);
+            case "REGISTRO_PARTICIPANTE" -> procesarRegistroParticipante(linea);
+            case "INSCRIPCION" -> procesarInscripcion(linea);
+            case "PAGO" -> procesarPago(linea);
+            case "VALIDAR_INSCRIPCION" -> procesarValidacionInscripcion(linea);
+            case "REGISTRO_ACTIVIDAD" -> procesarRegistroActividad(linea);
+            case "ASISTENCIA" -> procesarRegistroAsistencia(linea);
+            case "CERTIFICADO" -> procesarCertificado(linea);
+            case "REPORTE_PARTICIPANTES" -> generarReporteParticipantes(linea);
+            case "REPORTE_ACTIVIDADES" -> generarReporteActividades(linea);
+            case "REPORTE_EVENTOS" -> generarReporteEventos(linea);
+            default -> throw new IllegalArgumentException("Instrucción no reconocida: " + linea);
+        };
+    }
 
-        if (linea.startsWith("REGISTRO_EVENTO")) {
-            return procesarRegistroEvento(linea);
-        } else if (linea.startsWith("REGISTRO_PARTICIPANTE")) {
-            return procesarRegistroParticipante(linea);
-        } else if (linea.startsWith("INSCRIPCION")) {
-            return procesarInscripcion(linea);
-        } else if (linea.startsWith("PAGO")) {
-            return procesarPago(linea);
-        } else if (linea.startsWith("VALIDAR_INSCRIPCION")) {
-            return procesarValidacionInscripcion(linea);
-        } else if (linea.startsWith("REGISTRO_ACTIVIDAD")) {
-            return procesarRegistroActividad(linea);
-        } else if (linea.startsWith("ASISTENCIA")) {
-            return procesarRegistroAsistencia(linea);
-        } else if (linea.startsWith("CERTIFICADO")){
-            return procesarCertificado(linea);
-        }
-
-        throw new IllegalArgumentException("Instrucción no reconocida");
+    // Método auxiliar para extraer el comando de la línea
+    private String extraerComando(String linea) {
+        int parentesisIndex = linea.indexOf('(');
+        return parentesisIndex != -1 ? linea.substring(0, parentesisIndex) : linea;
     }
 
     private String procesarRegistroEvento(String linea) {
@@ -183,10 +189,14 @@ public class FileProcessor {
         // Ejemplo: VALIDAR_INSCRIPCION("zelda@hyrule.edu","EVT-00000001");
         try {
             String[] partes = extraerParametros(linea);
-            if (partes.length != 2) return "Error: numero de parametros invalido en '" + linea + "'";
+            if (partes.length != 2) {
+                return "Error: numero de parametros invalido en '" + linea + "'";
+            }
 
             ArrayList<String> errores = inscripcionController.confirmarPagoInscripcion(partes);
-            if (!errores.isEmpty()) return "Error en registro: " + String.join(", ", errores);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
 
             return "Inscripcion confirmada: " + partes[0] + " al evento " + partes[1];
         } catch (Exception e) {
@@ -211,56 +221,92 @@ public class FileProcessor {
             return "Error al procesar la actividad" + e.getMessage();
         }
     }
-    
-    private String procesarRegistroAsistencia(String linea){
+
+    private String procesarRegistroAsistencia(String linea) {
         // Ejemplo: ASISTENCIA("zelda@hyrule.edu","ACT-00000001");
         try {
             String[] partes = extraerParametros(linea);
-            if (partes.length != 2) return "Error: numero de parametros invalido en '" + linea + "'";
+            if (partes.length != 2) {
+                return "Error: numero de parametros invalido en '" + linea + "'";
+            }
 
             ArrayList<String> errores = asistenciaController.registrarAsistencia(partes);
-            if (!errores.isEmpty()) return "Error en registro: " + String.join(", ", errores);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
 
             return "Asistencia registrada: " + partes[0] + " a la actividad " + partes[1];
         } catch (Exception e) {
             return "Error al procesar el registro de asistencia " + e.getMessage();
         }
     }
-    
-    private String procesarCertificado(String linea){
+
+    private String procesarCertificado(String linea) {
         try {
             String[] partes = extraerParametros(linea);
-            if (partes.length != 2) return "Error: numero de parametros invalido en '" + linea + "'";
+            if (partes.length != 2) {
+                return "Error: numero de parametros invalido en '" + linea + "'";
+            }
 
             ArrayList<String> errores = certificadoController.registrarGenerarCertificado(partes, rutaSalidaReportes);
-            if (!errores.isEmpty()) return "Error en registro: " + String.join(", ", errores);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
 
             return "Se registro y se genero certificado: " + partes[0] + " del evento " + partes[1];
         } catch (Exception e) {
             return "Error al procesar el registro y generacion de certificado " + e.getMessage();
         }
     }
-
-    /*
-    private String procesarReporte(String linea){
-        if(rutaSalidaReportes == null || rutaSalidaReportes.isEmpty()){
-        throw new IllegalArgumentException("Ruta de salida para reportes no configurada");
-        }
-        File directorio = new File(rutaSalidaReportes);
-        if(!directorio.exists()){
-            directorio.mkdirs();
-        }
     
-        if(linea.startsWith("REPORTE_PARTICIPANTES")){
-            return generarReporteParticipantes(linea);
-        }else if(linea.startsWith("REPORTE_ACTIVIDADES")){
-            return generarReporteActividades(linea);
-        }else if(linea.startsWith("REPORTE_EVENTOS"){
-            return generarReporteEventos(linea);
+    private String generarReporteParticipantes(String linea){
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length < 1) return "Error: numero de parametros invalido en '" + linea + "'";
+            
+            ArrayList<String> errores = participanteController.generarReporte(partes, rutaSalidaReportes);
+            if (!errores.isEmpty()) {
+                return "Error en generacion: " + String.join(", ", errores);
+            }
+            
+            return "Se genero reporte, del los Parcipantes del evento " + partes[0];
+        } catch (Exception e) {
+            return "Error al procesar la generacion de reporte de participantes " + e.getMessage();
         }
-        throw new IllegalArgumentException("Tipo de reporte no reconocido");
     }
-     */
+    
+    private String generarReporteActividades(String linea){
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length < 1) return "Error: numero de parametros invalido en '" + linea + "'";
+            
+            ArrayList<String> errores = actividadController.generarReporte(partes, rutaSalidaReportes);
+            if (!errores.isEmpty()) {
+                return "Error en generacion: " + String.join(", ", errores);
+            }
+            
+            return "Se genero reporte de las actividades " + partes[0];
+        } catch (Exception e) {
+            return "Error al procesar la generacion de reporte de actividades" + e.getMessage();
+        }
+    }
+    
+    private String generarReporteEventos(String linea){
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length < 1) return "Error: numero de parametros invalido en '" + linea + "'";
+            
+            ArrayList<String> errores = eventoController.generarReporte(partes, rutaSalidaReportes);
+            if (!errores.isEmpty()) {
+                return "Error en registro: " + String.join(", ", errores);
+            }
+            
+            return "Se genero reporte del Evento " + partes[0];
+        } catch (Exception e) {
+            return "Error al procesar la generacion de reporte de participantes " + e.getMessage();
+        }
+    }
+    
     private static String[] extraerParametros(String linea) {
         // Extrae el contenido entre paréntesis
         String contenido = linea.substring(linea.indexOf('(') + 1, linea.lastIndexOf(')'));

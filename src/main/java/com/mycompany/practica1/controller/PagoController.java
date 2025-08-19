@@ -25,9 +25,9 @@ public class PagoController {
     private PagoDAO pagoDAO;
     private Validador validador;
 
-    public PagoController(PagoDAO pagoDAO, Validador validador) {
-        this.pagoDAO = pagoDAO;
-        this.validador = validador;
+    public PagoController() {
+        this.pagoDAO = new PagoDAO();
+        this.validador = new Validador();
     }
 
     public ArrayList<String> registrarPago(String[] datos) {

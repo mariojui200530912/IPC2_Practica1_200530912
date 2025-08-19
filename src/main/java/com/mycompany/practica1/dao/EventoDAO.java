@@ -11,6 +11,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,5 +108,52 @@ public class EventoDAO {
         }
         return eventos;
     }
+    
+    public List<Evento> obtenerEventosParaReporte(String tipo, String fechaInicio, String fechaFin, 
+                                            String cupoMin, String cupoMax) throws SQLException {
+    StringBuilder sql = new StringBuilder("SELECT * FROM evento WHERE 1=1 ");
+    
+    if (!tipo.isEmpty()) sql.append("AND tipo = ? ");
+    if (!fechaInicio.isEmpty() && !fechaFin.isEmpty()) 
+        sql.append("AND fecha BETWEEN ? AND ? ");
+    if (!cupoMin.isEmpty()) sql.append("AND cupo_maximo >= ? ");
+    if (!cupoMax.isEmpty()) sql.append("AND cupo_maximo <= ? ");
+    
+    try (Connection conn = conexionDB.getConexion();
+         PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+        
+        int paramIndex = 1;
+        if (!tipo.isEmpty()) {
+            stmt.setString(paramIndex++, tipo);
+        }
+        if (!fechaInicio.isEmpty() && !fechaFin.isEmpty()) {
+            stmt.setDate(paramIndex++, Date.valueOf(LocalDate.parse(fechaInicio, DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+            stmt.setDate(paramIndex++, Date.valueOf(LocalDate.parse(fechaFin, DateTimeFormatter.ofPattern("dd/MM/yyyy"))));
+        }
+        if (!cupoMin.isEmpty()) {
+            stmt.setInt(paramIndex++, Integer.parseInt(cupoMin));
+        }
+        if (!cupoMax.isEmpty()) {
+            stmt.setInt(paramIndex++, Integer.parseInt(cupoMax));
+        }
+        
+        List<Evento> eventos = new ArrayList<>();
+        try (ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Evento e = new Evento(
+                    rs.getString("codigo"),
+                    rs.getDate("fecha").toLocalDate(),
+                    TipoEvento.valueOf(rs.getString("tipo")),
+                    rs.getString("titulo_evento"),
+                    rs.getString("ubicacion"),
+                    rs.getInt("cupo_maximo"),
+                    rs.getFloat("costo_inscripcion")
+                );
+                eventos.add(e);
+            }
+        }
+        return eventos;
+    }
+}
 
 }

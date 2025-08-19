@@ -5,6 +5,7 @@
 package com.mycompany.practica1.controller;
 
 import com.mycompany.practica1.dao.ActividadDAO;
+import com.mycompany.practica1.dao.AsistenciaDAO;
 import com.mycompany.practica1.dao.EventoDAO;
 import com.mycompany.practica1.dao.InscripcionDAO;
 import com.mycompany.practica1.dao.ParticipanteDAO;
@@ -16,7 +17,11 @@ import com.mycompany.practica1.model.TipoActividad;
 import com.mycompany.practica1.model.TipoEstatus;
 import com.mycompany.practica1.model.TipoInscripcion;
 import com.mycompany.practica1.util.Validador;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -31,8 +36,12 @@ public class ActividadController {
     private ActividadDAO actividadDAO;
     private Validador validador;
     private InscripcionDAO inscripcionDAO;
+    private Evento evento;
+    private EventoDAO eventoDAO;
 
     public ActividadController() {
+        this.eventoDAO = new EventoDAO();
+        this.inscripcionDAO = new InscripcionDAO();
         this.actividadDAO = new ActividadDAO();
         this.validador = new Validador();
     }
@@ -133,6 +142,85 @@ public class ActividadController {
 
     public List<Actividad> obtenerTodosEventos() throws SQLException {
         return actividadDAO.obtenerTodos();
+    }
+
+    public ArrayList<String> generarReporte(String[] datos, String rutaSalidaReportes) {
+        ArrayList<String> errores = new ArrayList<>();
+        try {
+            String codigoEvento = datos[0];
+            String tipoActividad = datos[1];
+            String emailEncargado = datos[2];
+            LocalDateTime ahora = LocalDateTime.now();
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss");
+            String fechaHora = ahora.format(format);
+
+            AsistenciaDAO asistenciaDAO = new AsistenciaDAO();
+            Evento evento = eventoDAO.obtenerEventoPorCodigo(codigoEvento);
+            if (evento == null) {
+                errores.add("Evento no encontrado");
+                return errores;
+            }
+            // Construir Actividades
+            List<Actividad> actividades = actividadDAO.obtenerActividadesParaReporte(codigoEvento, tipoActividad, emailEncargado);
+            if (actividades == null) {
+                errores.add("No hay actividades que cumplan con estos filtros");
+                return errores;
+            }
+            String nombreArchivo = rutaSalidaReportes + File.separator + "reporte_actividades_" + codigoEvento + "_" + fechaHora + ".html";
+            try (PrintWriter writer = new PrintWriter(new FileWriter(nombreArchivo))) {
+                writer.println("<!DOCTYPE html>");
+                writer.println("<html>");
+                writer.println("<head>");
+                writer.println("<title>Reporte de Actividades - " + codigoEvento + "</title>");
+                writer.println("<style>");
+                writer.println("table { width: 100%; border-collapse: collapse; }");
+                writer.println("th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }");
+                writer.println("th { background-color: #f2f2f2; }");
+                writer.println("</style>");
+                writer.println("</head>");
+                writer.println("<body>");
+                writer.println("<h1>Reporte de Actividades</h1>");
+                writer.println("<h2>Evento: " + evento.getTituloEvento() + "</h2>");
+
+                writer.println("<table>");
+                writer.println("<tr>");
+                writer.println("<th>Código Actividad</th>");
+                writer.println("<th>Tipo</th>");
+                writer.println("<th>Título</th>");
+                writer.println("<th>Encargado</th>");
+                writer.println("<th>Hora Inicio</th>");
+                writer.println("<th>Hora Fin</th>");
+                writer.println("<th>Cupo Máximo</th>");
+                writer.println("<th>Asistentes</th>");
+                writer.println("</tr>");
+
+                for (Actividad a : actividades) {
+                    int asistentes = asistenciaDAO.contarAsistentes(a.getCodigo());
+                    writer.println("<tr>");
+                    writer.println("<td>" + a.getCodigo() + "</td>");
+                    writer.println("<td>" + a.getTipo() + "</td>");
+                    writer.println("<td>" + a.getTitulo() + "</td>");
+                    writer.println("<td>" + a.getEmailParticipanteEncargado() + "</td>");
+                    writer.println("<td>" + a.getHoraInicio() + "</td>");
+                    writer.println("<td>" + a.getHoraFinal() + "</td>");
+                    writer.println("<td>" + a.getCupoMaximo() + "</td>");
+                    writer.println("<td>" + asistentes + "</td>");
+                    writer.println("</tr>");
+                }
+
+                writer.println("</table>");
+                writer.println("<p>Total actividades: " + actividades.size() + "</p>");
+                writer.println("</body>");
+                writer.println("</html>");
+            }
+
+        } catch (SQLException e) {
+            errores.add("Error en base de datos: " + e.getMessage());
+        } catch (Exception e) {
+            errores.add("Error al registrar: " + e.getMessage());
+        }
+
+        return errores;
     }
 
 }

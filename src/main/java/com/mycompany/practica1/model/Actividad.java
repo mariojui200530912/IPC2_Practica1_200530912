@@ -19,6 +19,7 @@ public class Actividad {
     private int cupoMaximo;
     private int idParticipanteEncargado;
     private String codigoEvento;
+    private String emailParticipanteEncargado;
 
     public Actividad(String codigo, TipoActividad tipo, String titulo, LocalTime horaInicio, LocalTime horaFinal, int cupoMaximo, int idParticipanteEncargado, String codigoEvento) {
         this.codigo = codigo;
@@ -93,6 +94,14 @@ public class Actividad {
 
     public void setCodigoEvento(String codigoEvento) {
         this.codigoEvento = codigoEvento;
+    }
+
+    public String getEmailParticipanteEncargado() {
+        return emailParticipanteEncargado;
+    }
+
+    public void setEmailParticipanteEncargado(String emailParticipanteEncargado) {
+        this.emailParticipanteEncargado = emailParticipanteEncargado;
     }
     
 }

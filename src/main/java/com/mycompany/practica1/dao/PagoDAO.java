@@ -5,8 +5,10 @@
 package com.mycompany.practica1.dao;
 
 import com.mycompany.practica1.model.Pago;
+import com.mycompany.practica1.model.TipoPago;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -21,7 +23,7 @@ public class PagoDAO {
     }
 
     public void registrarPago(Pago pago) throws SQLException {
-        String sql = "INSERT INTO pago (tipo_pago, monto, evento_codigo, id_participante) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO pago (tipo_pago, monto, inscripcion_codigo_evento, inscripcion_id_participante) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -35,5 +37,29 @@ public class PagoDAO {
             conexionDB.cerrarConexion();
         }
     }
+    
+    public Pago obtenerPago(int idParticipante, String codigoEvento) throws SQLException {
+        String sql = "SELECT * FROM pago WHERE inscripcion_codigo_evento = ? AND inscripcion_id_participante = ?";
+        Pago pago = null;
+
+        try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setString(1, codigoEvento);
+            stmt.setInt(2, idParticipante);
+            ResultSet rs = stmt.executeQuery();
+            
+            if (rs.next()) {
+                pago = new Pago(
+                        TipoPago.valueOf(rs.getString("tipo_pago")),
+                        rs.getFloat("monto"),
+                        rs.getString("inscripcion_codigo_evento"),
+                        rs.getInt("inscripcion_id_participante")
+                );
+            }
+        } finally {
+            conexionDB.cerrarConexion();
+        }
+        return pago;
+    }    
 }
 

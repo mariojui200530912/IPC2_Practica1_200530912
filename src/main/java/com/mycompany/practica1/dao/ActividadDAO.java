@@ -109,7 +109,7 @@ public class ActividadDAO {
 
     public List<Actividad> obtenerActividadesPorEvento(String codigoEvento) throws SQLException {
         List<Actividad> actividades = new ArrayList<>();
-        String sql = "SELECT * FROM actividades WHERE evento_codigo_evento = ?";
+        String sql = "SELECT * FROM actividad WHERE evento_codigo_evento = ?";
 
         try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -132,5 +132,45 @@ public class ActividadDAO {
             }
         }
         return actividades;
+    }
+
+    public List<Actividad> obtenerActividadesParaReporte(String codigoEvento, String tipo, String emailEncargado) throws SQLException {
+        String sql = "SELECT a.*, p.email as email_encargado, p.id FROM actividad a "
+                + "JOIN participante p ON a.id_participante_encargado = p.id "
+                + "WHERE a.evento_codigo_evento = ? "
+                + (tipo.isEmpty() ? "" : "AND a.tipo = ? ")
+                + (emailEncargado.isEmpty() ? "" : "AND p.email = ? ");
+
+        try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            int paramIndex = 1;
+            stmt.setString(paramIndex++, codigoEvento);
+
+            if (!tipo.isEmpty()) {
+                stmt.setString(paramIndex++, tipo);
+            }
+            if (!emailEncargado.isEmpty()) {
+                stmt.setString(paramIndex++, emailEncargado);
+            }
+
+            List<Actividad> actividades = new ArrayList<>();
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Actividad a = new Actividad(
+                            rs.getString("codigo"),
+                            TipoActividad.valueOf(rs.getString("tipo")),
+                            rs.getString("titulo"),
+                            rs.getTime("hora_inicio").toLocalTime(),
+                            rs.getTime("hora_fin").toLocalTime(),
+                            rs.getInt("cupo_maximo"),
+                            rs.getInt("id"),
+                            codigoEvento
+                    );
+                    a.setEmailParticipanteEncargado(emailEncargado);
+                    actividades.add(a);
+                }
+            }
+            return actividades;
+        }
     }
 }

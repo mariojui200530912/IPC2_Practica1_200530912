@@ -97,11 +97,6 @@ public class InscripcionController {
                 return errores;
             }
             boolean actualizado = inscripcionDAO.actualizarEstadoInscripcion(evento.getCodigo(), participante.getIdParticipante(), estatus);
-            if (actualizado) {
-                errores.add("Estado actualizado correctamente");
-            } else {
-                errores.add("No se encontro la inscripcion especificada");
-            }
         } catch (IllegalArgumentException e) {
             System.out.println("Error: valor inválido en los datos -> " + e.getMessage());
         } catch (Exception e) {

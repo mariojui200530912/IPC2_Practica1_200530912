@@ -28,6 +28,7 @@ import java.util.List;
  * @author Hp
  */
 public class CertificadoController {
+
     private Certificado certificado;
     private CertificadoDAO certificadoDAO;
     private ActividadDAO actividadDAO;
@@ -73,8 +74,8 @@ public class CertificadoController {
 
             // Generar el certificado
             Certificado certificado = new Certificado(
-                participante.getIdParticipante(),
-                codigoEvento
+                    participante.getIdParticipante(),
+                    codigoEvento
             );
 
             // Guardar en base de datos
@@ -109,11 +110,11 @@ public class CertificadoController {
 
         return errores;
     }
-    
+
     private boolean tieneAsistenciasValidas(int idParticipante, String codigoEvento) throws SQLException {
         // Obtener todas las actividades del evento
         List<Actividad> actividades = actividadDAO.obtenerActividadesPorEvento(codigoEvento);
-        
+
         // Verificar asistencia en al menos una actividad
         for (Actividad actividad : actividades) {
             if (asistenciaDAO.verificarAsistencia(actividad.getCodigo(), idParticipante)) {
@@ -123,16 +124,15 @@ public class CertificadoController {
         return false;
     }
 
-    private void generarArchivoCertificado(Certificado certificado, Participante participante, Evento evento, String rutaSalidaReportes) 
+    private void generarArchivoCertificado(Certificado certificado, Participante participante, Evento evento, String rutaSalidaReportes)
             throws IOException {
-        // Crear directorio si no existe
-        File directorio = new File("certificados");
-        if (!directorio.exists()) {
-            directorio.mkdirs();
-        }
-        
+        // Sanitizar el nombre del participante para el archivo
+        String nombreLimpio = participante.getNombre().replaceAll("[^a-zA-Z0-9_\\-]", "_");
+
         // Crear archivo HTML
-        String nombreArchivo = "certificados/certificado_" + evento.getCodigo()+"_"+ participante.getNombre()+ ".html";
+        String nombreArchivo = rutaSalidaReportes + File.separator
+                + "certificado_" + evento.getCodigo() + "_" + nombreLimpio + ".html";
+
         try (PrintWriter writer = new PrintWriter(new FileWriter(nombreArchivo))) {
             writer.println("<!DOCTYPE html>");
             writer.println("<html>");
@@ -154,7 +154,7 @@ public class CertificadoController {
             writer.println("<p>ha participado en el evento:</p>");
             writer.println("<p><strong>" + evento.getTituloEvento() + "</strong></p>");
             writer.println("<p>realizado el " + evento.getFecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "</p>");
-            writer.println("<p>Código de certificado: " + certificado.getCodigoEvento()+ "_" + certificado.getIdParticipante() + "</p>");
+            writer.println("<p>Código de certificado: " + certificado.getCodigoEvento() + "_" + certificado.getIdParticipante() + "</p>");
             writer.println("</div>");
             writer.println("<div class='firma'>");
             writer.println("<p>_________________________</p>");

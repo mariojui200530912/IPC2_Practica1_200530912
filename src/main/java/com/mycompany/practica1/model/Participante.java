@@ -14,6 +14,7 @@ public class Participante {
     private String nombre;
     private TipoParticipante tipoParticipante;
     private String institucionProcedencia;
+    private TipoEstatus estatus;
 
     public Participante(String email, String nombre, TipoParticipante tipoParticipante, String institucionProcedencia) {
         this.email = email;
@@ -69,6 +70,12 @@ public class Participante {
     public void setInstitucionProcedencia(String institucionProcedencia) {
         this.institucionProcedencia = institucionProcedencia;
     }
-    
-    
+
+    public TipoEstatus getEstatus() {
+        return estatus;
+    }
+
+    public void setEstatus(TipoEstatus estatus) {
+        this.estatus = estatus;
+    }
 }

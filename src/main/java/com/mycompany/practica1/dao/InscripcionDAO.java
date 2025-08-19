@@ -45,7 +45,7 @@ public class InscripcionDAO {
     }
 
     public Inscripcion obtenerInscripcion(String codigo, int idParticipante) throws SQLException {
-        String sql = "SELECT * FROM evento WHERE codigo_evento = ? AND id_participante = ?";
+        String sql = "SELECT * FROM inscripcion WHERE codigo_evento = ? AND id_participante = ?";
         Inscripcion inscripcion = null;
 
         try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {

@@ -59,4 +59,21 @@ public class AsistenciaDAO {
             }
         }
     }
+    
+    public int contarAsistentes(String codigoActividad) throws SQLException {
+    String sql = "SELECT COUNT(*) AS total FROM asistencia WHERE codigo_actividad = ?";
+    
+    try (Connection conn = conexionDB.getConexion();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setString(1, codigoActividad);
+        
+        try (ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+        }
+    }
+    return 0;
+}
 }
