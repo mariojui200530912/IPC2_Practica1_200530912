@@ -49,11 +49,16 @@ public class InscripcionController {
 
             Participante participante = participanteDAO.obtenerParticipantePorEmail(email);
             Evento evento = eventoDAO.obtenerEventoPorCodigo(codigoEvento);
+            int participantesInscritos = inscripcionDAO.contarInscritos(evento.getCodigo());
+            
             if (participante == null) {
                 errores.add("El correo de participante no esta registrado en la base de datos");
                 return errores;
             } else if (evento == null) {
                 errores.add("El codigo de Evento no existe en la base de datos");
+                return errores;
+            } else if (participantesInscritos == evento.getCupoMaximo()){
+                errores.add("No es posible inscribir, ya se lleno el cupo maximo.");
                 return errores;
             }
 

@@ -23,7 +23,7 @@ import java.util.List;
 public class InscripcionDAO {
 
     private ConexionDB conexionDB;
-    
+
     public InscripcionDAO() {
         this.conexionDB = new ConexionDB();
     }
@@ -43,17 +43,17 @@ public class InscripcionDAO {
             conexionDB.cerrarConexion();
         }
     }
-    
-    public Inscripcion obtenerIncripcion(String codigo, int idParticipante) throws SQLException {
+
+    public Inscripcion obtenerInscripcion(String codigo, int idParticipante) throws SQLException {
         String sql = "SELECT * FROM evento WHERE codigo_evento = ? AND id_participante = ?";
         Inscripcion inscripcion = null;
-        
+
         try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
+
             stmt.setString(1, codigo);
             stmt.setInt(2, idParticipante);
             ResultSet rs = stmt.executeQuery();
-            
+
             if (rs.next()) {
                 inscripcion = new Inscripcion(
                         rs.getString("codigo_evento"),
@@ -65,22 +65,37 @@ public class InscripcionDAO {
         } finally {
             conexionDB.cerrarConexion();
         }
-        
+
         return inscripcion;
     }
-    
+
     public boolean actualizarEstadoInscripcion(String codigo, int idParticipante, TipoEstatus nuevoEstatus) throws SQLException {
         String sql = "UPDATE inscripcion SET estatus = ? WHERE codigo_evento = ? AND id_participante = ?";
-        
-        try(Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)){
-            stmt.setString(1,nuevoEstatus.name());
-            stmt.setString(2,codigo);
+
+        try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, nuevoEstatus.name());
+            stmt.setString(2, codigo);
             stmt.setInt(3, idParticipante);
-            
+
             int filasActualizadas = stmt.executeUpdate();
             return filasActualizadas > 0;
-        }finally{
+        } finally {
             conexionDB.cerrarConexion();
         }
+    }
+
+    public int contarInscritos(String codigoEvento) throws SQLException {
+        String sql = "SELECT COUNT(*) AS total FROM inscripcion WHERE codigo_evento = ?";
+
+        try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, codigoEvento);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("total");
+                }
+            }
+        }
+        return 0;
     }
 }

@@ -4,7 +4,6 @@
  */
 package com.mycompany.practica1.util;
 
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -67,6 +66,48 @@ public class Validador {
         }
     }
 
+    public void validarHora(String horaStr) {
+        validarNoVacio(horaStr, "hora");
+
+        // Verificar formato con expresión regular
+        if (!horaStr.matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            throw new IllegalArgumentException("Formato de hora inválido. Debe ser HH:mm en formato 24 horas");
+        }
+
+        // Validación adicional descomponiendo la hora
+        String[] partes = horaStr.split(":");
+        try {
+            int horas = Integer.parseInt(partes[0]);
+            int minutos = Integer.parseInt(partes[1]);
+
+            if (horas < 0 || horas > 23) {
+                throw new IllegalArgumentException("Hora inválida: las horas deben estar entre 00 y 23");
+            }
+            if (minutos < 0 || minutos > 59) {
+                throw new IllegalArgumentException("Hora inválida: los minutos deben estar entre 00 y 59");
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Hora inválida: componentes numéricos incorrectos");
+        }
+    }
+
+    public void validarRangoHoras(String horaInicio, String horaFin) {
+        validarHora(horaInicio);
+        validarHora(horaFin);
+
+        String[] inicio = horaInicio.split(":");
+        String[] fin = horaFin.split(":");
+
+        int hInicio = Integer.parseInt(inicio[0]);
+        int mInicio = Integer.parseInt(inicio[1]);
+        int hFin = Integer.parseInt(fin[0]);
+        int mFin = Integer.parseInt(fin[1]);
+
+        if (hFin < hInicio || (hFin == hInicio && mFin <= mInicio)) {
+            throw new IllegalArgumentException("La hora de fin debe ser posterior a la hora de inicio");
+        }
+    }
+
     public void validarEmail(String email) {
         validarNoVacio(email, "correo electrónico");
         if (!PATRON_EMAIL.matcher(email).matches()) {
@@ -92,7 +133,7 @@ public class Validador {
         }
         return nombres;
     }
-    
+
     public void validarFechaFutura(String fechaStr, String formato) {
         validarFecha(fechaStr, formato);
 
@@ -107,14 +148,14 @@ public class Validador {
             throw new RuntimeException("Error inesperado al validar fecha", e);
         }
     }
-    
-    public void validarDecimales(float valor, int maxDecimales, String campo){
+
+    public void validarDecimales(float valor, int maxDecimales, String campo) {
         String[] parts = String.valueOf(valor).split("\\.");
         if (parts.length > 1 && parts[1].length() > maxDecimales) {
             throw new IllegalArgumentException(
-                    String.format("%s debe tener maximo %d decimales", campo,maxDecimales)
+                    String.format("%s debe tener maximo %d decimales", campo, maxDecimales)
             );
         }
     }
-    
+
 }

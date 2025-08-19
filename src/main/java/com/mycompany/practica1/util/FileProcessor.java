@@ -4,6 +4,9 @@
  */
 package com.mycompany.practica1.util;
 
+import com.mycompany.practica1.controller.ActividadController;
+import com.mycompany.practica1.controller.AsistenciaController;
+import com.mycompany.practica1.controller.CertificadoController;
 import com.mycompany.practica1.controller.EventoController;
 import com.mycompany.practica1.controller.InscripcionController;
 import com.mycompany.practica1.controller.PagoController;
@@ -30,7 +33,10 @@ public class FileProcessor {
     private EventoController eventoController;
     private ParticipanteController participanteController;
     private InscripcionController inscripcionController;
+    private ActividadController actividadController;
     private PagoController pagoController;
+    private AsistenciaController asistenciaController;
+    private CertificadoController certificadoController;
     private LogWindow logWindow;
 
     public FileProcessor(int velocidadMs, String rutaSalidaReportes, LogWindow logWindow) {
@@ -90,6 +96,10 @@ public class FileProcessor {
             return procesarValidacionInscripcion(linea);
         } else if (linea.startsWith("REGISTRO_ACTIVIDAD")) {
             return procesarRegistroActividad(linea);
+        } else if (linea.startsWith("ASISTENCIA")) {
+            return procesarRegistroAsistencia(linea);
+        } else if (linea.startsWith("CERTIFICADO")){
+            return procesarCertificado(linea);
         }
 
         throw new IllegalArgumentException("Instrucción no reconocida");
@@ -185,20 +195,49 @@ public class FileProcessor {
     }
 
     private String procesarRegistroActividad(String linea) {
-        // Ejemplo: REGISTRO_EVENTO("EVT-001","25/08/2025","CHARLA","Tecnología Sheikah","Auditorio Central",150,120.00);
+        // Ejemplo: REGISTRO_ACTIVIDAD("ACT-00000001","EVT-00000001","CHARLA","Taller de pociones","zelda@hyrule.edu","10:00","12:00",30);
         try {
             String[] partes = extraerParametros(linea);
-            if (partes.length != 7) {
+            if (partes.length != 8) {
                 return "Error: numero de parametros invalido en '" + linea + "'";
             }
 
-            ArrayList<String> errores = eventoController.registrarEvento(partes);
+            ArrayList<String> errores = actividadController.registrarActividad(partes);
             if (!errores.isEmpty()) {
                 return "Error en registro: " + String.join(", ", errores);
             }
-            return "Evento registrado: " + partes[0];
+            return "Actividad registrada: " + partes[0];
         } catch (Exception e) {
-            return "Error al procesar el registro" + e.getMessage();
+            return "Error al procesar la actividad" + e.getMessage();
+        }
+    }
+    
+    private String procesarRegistroAsistencia(String linea){
+        // Ejemplo: ASISTENCIA("zelda@hyrule.edu","ACT-00000001");
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length != 2) return "Error: numero de parametros invalido en '" + linea + "'";
+
+            ArrayList<String> errores = asistenciaController.registrarAsistencia(partes);
+            if (!errores.isEmpty()) return "Error en registro: " + String.join(", ", errores);
+
+            return "Asistencia registrada: " + partes[0] + " a la actividad " + partes[1];
+        } catch (Exception e) {
+            return "Error al procesar el registro de asistencia " + e.getMessage();
+        }
+    }
+    
+    private String procesarCertificado(String linea){
+        try {
+            String[] partes = extraerParametros(linea);
+            if (partes.length != 2) return "Error: numero de parametros invalido en '" + linea + "'";
+
+            ArrayList<String> errores = certificadoController.registrarGenerarCertificado(partes, rutaSalidaReportes);
+            if (!errores.isEmpty()) return "Error en registro: " + String.join(", ", errores);
+
+            return "Se registro y se genero certificado: " + partes[0] + " del evento " + partes[1];
+        } catch (Exception e) {
+            return "Error al procesar el registro y generacion de certificado " + e.getMessage();
         }
     }
 

@@ -129,13 +129,6 @@ public class MainFrame extends JFrame {
             return;
         }
 
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Seleccionar archivo de instrucciones:");
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos de texto (.txt)", "txt"));
-        if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
-            return;
-        }
-
         if (logWindow == null) {
             logWindow = new LogWindow();
             desktopPane.add(logWindow);
@@ -150,8 +143,7 @@ public class MainFrame extends JFrame {
                 logWindow
         );
 
-        processor.procesarArchivo(fileChooser.getSelectedFile());
-
+        processor.procesarArchivo(configDialog.getArchivoInstrucciones());
     }
 
     private void mostrarResultadosProcesamiento(List<String> resultados) {
