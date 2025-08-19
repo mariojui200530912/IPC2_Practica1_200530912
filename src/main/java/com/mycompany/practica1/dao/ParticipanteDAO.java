@@ -79,7 +79,7 @@ public class ParticipanteDAO {
     }
 
     public List<Participante> obtenerTodos() throws SQLException {
-        String sql = "SELECT nombre, tipo, institucion_procedencia, email FROM participante";
+        String sql = "SELECT id, nombre, tipo, institucion_procedencia, email FROM participante";
         List<Participante> participantes = new ArrayList<>();
 
         try (Connection conn = conexionDB.getConexion(); PreparedStatement stmt = conn.prepareStatement(sql); ResultSet rs = stmt.executeQuery()) {

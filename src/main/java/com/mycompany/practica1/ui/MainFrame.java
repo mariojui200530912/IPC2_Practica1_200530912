@@ -62,7 +62,7 @@ public class MainFrame extends JFrame {
         JMenuItem itemListarEventos = new JMenuItem("Listar eventos");
         itemListarEventos.addActionListener(this::mostrarListaEventos);
         menuEventos.add(itemListarEventos);
-        
+
         // Menú Participantes
         JMenu menuParticipantes = new JMenu("Participantes");
         JMenuItem itemNuevoParticipante = new JMenuItem("Registrar nuevo participante");
@@ -71,7 +71,7 @@ public class MainFrame extends JFrame {
         JMenuItem itemListarParticipantes = new JMenuItem("Listar participantes");
         itemListarParticipantes.addActionListener(this::mostrarListaParticipantes);
         menuParticipantes.add(itemListarParticipantes);
-        /*
+
         // Menú Reportes
         JMenu menuReportes = new JMenu("Reportes");
         JMenuItem itemReporteParticipantes = new JMenuItem("Reporte de participantes");
@@ -83,12 +83,12 @@ public class MainFrame extends JFrame {
         JMenuItem itemReporteEventos = new JMenuItem("Reporte de eventos");
         itemReporteEventos.addActionListener(this::generarReporteEventos);
         menuReportes.add(itemReporteEventos);
-         */
+
         // Agregar menús a la barra
         menuBar.add(menuArchivo);
         menuBar.add(menuEventos);
         menuBar.add(menuParticipantes);
-        // menuBar.add(menuReportes);
+        menuBar.add(menuReportes);
 
         setJMenuBar(menuBar);
     }
@@ -137,12 +137,12 @@ public class MainFrame extends JFrame {
             centrarVentanaInterna(logWindow);
             logWindow.setVisible(true);
         } else {
-            try{
+            try {
                 logWindow.setSelected(true);
-            } catch(PropertyVetoException ex){
+            } catch (PropertyVetoException ex) {
                 ex.printStackTrace();
             }
-            
+
         }
 
         // Lógica para procesar archivo
@@ -183,7 +183,6 @@ public class MainFrame extends JFrame {
         listFrame.setVisible(true);
     }
 
-    
     private void mostrarFormularioParticipante(ActionEvent e) {
         ParticipanteFormInternalFrame form = new ParticipanteFormInternalFrame();
         centrarVentanaInterna(form);
@@ -197,19 +196,25 @@ public class MainFrame extends JFrame {
         desktopPane.add(listFrame);
         listFrame.setVisible(true);
     }
-    
+
     private void generarReporteParticipantes(ActionEvent e) {
-        // Implementar generación de reporte
-        JOptionPane.showMessageDialog(this, "Reporte de participantes generado");
+        ReporteParticipantesInternalFrame form = new ReporteParticipantesInternalFrame();
+        centrarVentanaInterna(form);
+        desktopPane.add(form);
+        form.setVisible(true);
     }
 
     private void generarReporteActividades(ActionEvent e) {
-        // Implementar generación de reporte
-        JOptionPane.showMessageDialog(this, "Reporte de actividades generado");
+        ReporteActividadesInternalFrame form = new ReporteActividadesInternalFrame();
+        centrarVentanaInterna(form);
+        desktopPane.add(form);
+        form.setVisible(true);
     }
 
     private void generarReporteEventos(ActionEvent e) {
-        // Implementar generación de reporte
-        JOptionPane.showMessageDialog(this, "Reporte de eventos generado");
+        ReporteEventosInternalFrame form = new ReporteEventosInternalFrame();
+        centrarVentanaInterna(form);
+        desktopPane.add(form);
+        form.setVisible(true);
     }
 }
